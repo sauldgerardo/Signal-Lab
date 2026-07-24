@@ -50,19 +50,43 @@ has real predictive *edge* is a separate question. Answering it rigorously
 (information coefficient, Granger causality, out-of-sample) is **Milestone 3** —
 and a finding of "no edge" would be a legitimate, defensible result too.
 
+## Milestone 3 — is the signal actually real?
+A rising backtest curve is not evidence. `python validate.py` runs the tests a
+quant would run before believing anything:
+
+| Test | What it asks | Result |
+|---|---|---|
+| **Information Coefficient** | Does the stock ranking predict next-day returns? | IC ≈ **+0.001**, t ≈ 0.2 → **not significant** |
+| — on freight-elevated days | Is it stronger when freight spikes (as the thesis says)? | IC ≈ +0.003 — *directionally right, still not significant* |
+| **Granger causality** | Do freight moves *precede* the long-short spread? | best p ≈ **0.94** → **no lead/lag** |
+| **Out-of-sample** | Does it survive an untouched 2nd half (post-2022)? | Sharpe **0.0 → −0.3** → **does not survive** |
+
+**Verdict: no robust, statistically significant edge.** The freight→margin story
+is real *economically*, but at this universe and daily frequency it does not
+produce a tradeable signal. That's not a failure of the project — in real signal
+research most ideas die exactly here, and being able to *prove* one is dead is
+the skill. One honest crumb: the IC is slightly higher on freight-elevated days,
+which is the direction the thesis predicts — just far too weak to trade.
+
+**Where this could go next** (why it isn't a dead end): weekly instead of daily
+frequency, a wider universe, a cleaner freight index (Freightos/Cass rather than
+an ETF proxy), or company-level import-share data instead of hand-set scores.
+
 ## Layout
 - `src/universe.py` — the stock list, the thesis, and per-stock import-exposure scores
 - `src/ingest.py` — pull + cache price data (yfinance)
 - `src/signal.py` — turn the freight proxy into a lagged, conditional signal
 - `src/backtest.py` — long-short weights, always-on + conditional backtests, stats
-- `main.py` — runs the full milestone comparison end-to-end
+- `src/validate.py` — information coefficient, Granger causality, out-of-sample tests
+- `main.py` — runs the backtest comparison and chart
+- `validate.py` — runs the Milestone 3 validation report
 
 ## Roadmap
 1. **Milestone 1:** static thesis book vs. SPY, one chart. ✅
 2. **Milestone 2:** dynamic signal — drive the book off a freight proxy (BDRY),
    with rolling z-score, lag handling, and turnover-based costs. ✅
-3. **Milestone 3:** validation layer — Granger causality, information
-   coefficient, train/test out-of-sample split, multiple-testing correction.
+3. **Milestone 3:** validation layer — information coefficient, Granger
+   causality, out-of-sample split, significance tests. ✅
 4. **Milestone 4:** Streamlit dashboard + a one-page written thesis.
 
 ## Honesty notes
