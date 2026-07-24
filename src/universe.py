@@ -46,6 +46,12 @@ UNIVERSE = {
 
 BENCHMARK = "SPY"  # what we compare our long-short strategy against
 
+# Freight-cost proxy. BDRY tracks dry-bulk freight FUTURES (the Baltic complex),
+# so it moves with the actual cost of shipping goods -- a defensible, free, daily
+# stand-in for a freight index. Note: BDRY only launched in 2018, which honestly
+# bounds how far back the conditional (Milestone 2) backtest can run.
+FREIGHT_TICKER = "BDRY"
+
 # How far back to pull data
 START_DATE = "2015-01-01"
 END_DATE = None  # None = up to today

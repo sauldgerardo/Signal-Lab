@@ -24,31 +24,43 @@ python main.py
 This downloads prices, builds the long-short book, prints performance stats, and
 saves `output/strategy_vs_spy.png`.
 
-## Milestone 1 result (and why the "loss" is the point)
-![strategy vs SPY](output/strategy_vs_spy.png)
+## Results so far
+![conditional vs always-on vs SPY](output/strategy_vs_spy.png)
 
-The first version is an **always-on** book: permanently short importers, long
-domestic names. Backtested 2015–2026 it *underperforms* SPY (Sharpe ≈ **-0.25**
-vs SPY's 0.81). That's expected and instructive: freight costs weren't elevated
-most of that window, so the book spent years structurally short high-growth
-retailers straight through a bull market — fighting the market, not trading the
-signal.
+**Milestone 1 — always-on book.** Permanently short importers, long domestic
+names, every day. It *underperforms*: freight wasn't elevated most of the window,
+so the book spent years structurally short high-growth retailers through a bull
+market — fighting the market, not trading the signal. Sharpe ≈ **-0.12**.
 
-The fix (Milestone 2) is to make the signal **conditional**: only lean short-
-importer *when freight is actually spiking*, and sit flat otherwise. Reporting
-the honest v1 result and the flaw it exposes is deliberate — it reflects how real
-signal research actually proceeds.
+**Milestone 2 — conditional on freight.** The *same* book, but only turned on
+when the freight proxy ([BDRY](https://www.breakwaveadvisors.com/), dry-bulk
+freight futures) is elevated versus its own trailing year, acted on with a lag so
+there's no look-ahead. The strategy sits flat ~58% of days and only leans against
+importers when freight is actually stressed.
+
+| Strategy (2019–2026, net of costs) | Ann. vol | Max drawdown | Sharpe |
+|---|---|---|---|
+| Milestone 1 (always-on) | 0.12 | -0.32 | -0.12 |
+| **Milestone 2 (conditional)** | **0.05** | **-0.15** | -0.18 |
+
+The gating **cut volatility ~60% and halved the drawdown** — a much healthier
+risk profile — but the strategy is still *not* reliably profitable. That is the
+honest state of it: conditioning fixed the risk, but whether the freight signal
+has real predictive *edge* is a separate question. Answering it rigorously
+(information coefficient, Granger causality, out-of-sample) is **Milestone 3** —
+and a finding of "no edge" would be a legitimate, defensible result too.
 
 ## Layout
 - `src/universe.py` — the stock list, the thesis, and per-stock import-exposure scores
 - `src/ingest.py` — pull + cache price data (yfinance)
-- `src/backtest.py` — build long-short weights, backtest, performance stats
-- `main.py` — runs the whole first milestone end-to-end
+- `src/signal.py` — turn the freight proxy into a lagged, conditional signal
+- `src/backtest.py` — long-short weights, always-on + conditional backtests, stats
+- `main.py` — runs the full milestone comparison end-to-end
 
 ## Roadmap
-1. **Milestone 1 (this):** static thesis book vs. SPY, one chart. ✅
-2. **Milestone 2:** dynamic signal — drive weights off a live freight series
-   (Cass Freight Index / Freightos Baltic Index). Add lag handling.
+1. **Milestone 1:** static thesis book vs. SPY, one chart. ✅
+2. **Milestone 2:** dynamic signal — drive the book off a freight proxy (BDRY),
+   with rolling z-score, lag handling, and turnover-based costs. ✅
 3. **Milestone 3:** validation layer — Granger causality, information
    coefficient, train/test out-of-sample split, multiple-testing correction.
 4. **Milestone 4:** Streamlit dashboard + a one-page written thesis.

@@ -54,6 +54,42 @@ def run_backtest(prices, cost_per_turnover=0.0005):
     return out, weights
 
 
+def run_conditional_backtest(prices, strength, cost_per_turnover=0.0005):
+    """
+    Milestone 2: the SAME long-short book, but scaled each day by the freight
+    signal strength (0 = flat, 1 = full book). We only lean against importers
+    when freight is actually elevated.
+
+    Because the book now changes size day to day, we charge transaction costs on
+    the DAILY TURNOVER (how much the position changed), which is the honest way
+    to cost a dynamic strategy.
+    """
+    base = build_weights()
+    tickers = base.index.tolist()
+
+    rets = prices[tickers].pct_change()
+
+    # daily weights = base book * that day's freight strength (0..1)
+    strength = strength.reindex(prices.index).fillna(0.0).clip(0, 1)
+    weights = pd.DataFrame(
+        np.outer(strength.values, base.values),
+        index=prices.index, columns=tickers,
+    )
+
+    # gross return before costs: yesterday's weights earn today's returns
+    gross = (weights.shift(1) * rets).sum(axis=1)
+
+    # turnover = sum of |change in weight|; cost is proportional to it
+    turnover = weights.diff().abs().sum(axis=1).fillna(0.0)
+    costs = turnover * cost_per_turnover
+
+    net = (gross - costs).dropna()
+
+    bench = prices[BENCHMARK].pct_change().reindex(net.index).fillna(0)
+    out = pd.DataFrame({"strategy": net, "benchmark": bench})
+    return out, weights, strength
+
+
 def performance_stats(returns, periods_per_year=252):
     """Sharpe, annualised return/vol, max drawdown, hit rate. Be honest."""
     ann_ret = returns.mean() * periods_per_year
