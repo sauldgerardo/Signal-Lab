@@ -82,11 +82,11 @@ an ETF proxy), or company-level import-share data instead of hand-set scores.
 - `validate.py` — runs the Milestone 3 validation report
 
 ## Roadmap
-1. **Milestone 1:** static thesis book vs. SPY, one chart. ✅
-2. **Milestone 2:** dynamic signal — drive the book off a freight proxy (BDRY),
-   with rolling z-score, lag handling, and turnover-based costs. ✅
-3. **Milestone 3:** validation layer — information coefficient, Granger
-   causality, out-of-sample split, significance tests. ✅
+1. **Milestone 1 (done):** static thesis book vs. SPY, one chart.
+2. **Milestone 2 (done):** dynamic signal — drive the book off a freight proxy (BDRY),
+   with rolling z-score, lag handling, and turnover-based costs.
+3. **Milestone 3 (done):** validation layer — information coefficient, Granger
+   causality, out-of-sample split, significance tests.
 4. **Milestone 4:** Streamlit dashboard + a one-page written thesis.
 
 ## Honesty notes
